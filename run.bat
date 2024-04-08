@@ -4,6 +4,8 @@ SETLOCAL
 
 SET LT_PORT=5000
 
+SET DOCKER_NETWORK=my_docker_network
+
 :loop
 IF NOT "%1"=="" (
     IF "%1"=="--port" (
@@ -28,7 +30,9 @@ IF NOT "%1"=="" (
 WHERE /Q docker
 IF %ERRORLEVEL% NEQ 0 GOTO :install_docker
 
-docker run -ti --rm -p %LT_PORT%:%LT_PORT% %DB_VOLUME% -v lt-local:/home/libretranslate/.local libretranslate/libretranslate %*
+docker network ls | findstr /c:"%DOCKER_NETWORK%" >nul || docker network create %DOCKER_NETWORK%
+
+docker run --name libretranslate -ti --rm -p %LT_PORT%:%LT_PORT% %DB_VOLUME% -v lt-local:/home/libretranslate/.local --network=%DOCKER_NETWORK% libretranslate/libretranslate %*
 
 GOTO :done
 

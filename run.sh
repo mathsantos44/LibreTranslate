@@ -24,6 +24,8 @@ usage(){
 
 export LT_PORT=5000
 
+export DOCKER_NETWORK=my_docker_network
+
 # Parse args for overrides
 ARGS=()
 while [[ $# -gt 0 ]]
@@ -87,6 +89,7 @@ check_command(){
 environment_check(){
     check_command "docker" "https://www.docker.com/"
 }
-
 environment_check
-docker run -ti --rm -p $LT_PORT:$LT_PORT $DB_VOLUME -v lt-local:/home/libretranslate/.local libretranslate/libretranslate ${ARGS[@]}
+
+docker network ls | grep -q "$DOCKER_NETWORK" || docker network create "$DOCKER_NETWORK"
+docker run --name libretranslate -ti --rm -p "$LT_PORT":"$LT_PORT" $DB_VOLUME -v lt-local:/home/libretranslate/.local --network="$DOCKER_NETWORK" libretranslate/libretranslate "${ARGS[@]}"
